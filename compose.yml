@@ -1,0 +1,44 @@
+services:
+  nginx:
+    image: nginx:1.25.0
+    ports:
+      - 8000:80
+    volumes:
+      # ./srcフォルダをコンテナ内の/var/www/htmlにマウント
+      - ./src:/var/www/html
+      # ./docker/nginxフォルダをコンテナ内の/etc/nginx/conf.dにマウント
+      - ./nginx:/etc/nginx/conf.d
+    depends_on:
+      - app
+  # PHP-FPMの定義
+  app:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    environment:
+      MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD}
+      MYSQL_DATABASE: ${MYSQL_DATABASE}
+      MYSQL_USER: ${MYSQL_USER}
+      MYSQL_PASSWORD: ${MYSQL_PASSWORD}
+    env_file:
+      - .env
+    depends_on:
+      - mysql
+    command: /usr/local/bin/install.sh
+  mysql:
+    image: mysql:8.0
+    environment:
+      MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD}
+      MYSQL_DATABASE: ${MYSQL_DATABASE}
+      MYSQL_USER: ${MYSQL_USER}
+      MYSQL_PASSWORD: ${MYSQL_PASSWORD}
+    volumes:
+      - mysqldata:/var/lib/mysql
+      - ./mysql/my.cnf:/etc/mysql/conf.d/my.cnf
+      - ./mysql/sql:/docker-entrypoint-initdb.d
+    ports:
+      - 7638:3306
+
+volumes:
+  # 名前付きボリュームの作成
+  mysqldata:
