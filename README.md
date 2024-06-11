@@ -6,4 +6,3 @@
 4. git submodule update --init
 5. ./manual.sh
 6. docker compose up
-7. 
